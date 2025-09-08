@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Make request to the Python FastAPI backend
-    const response = await fetch("http://localhost:8000/generate_full_report", {
+    const response = await fetch("https://impact-value-1.onrender.com/generate_full_report", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
