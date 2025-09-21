@@ -10,7 +10,7 @@ import pdfplumber
 
 # --- Mistral API Configuration ---
 MISTRAL_MODEL: str = "mistral-large-latest" # Using Mistral API model
-MISTRAL_API_KEY: str = "eEwwWdEQVzzvWEyODfPGgWGfcBeE3vgb" # Your Mistral API key
+MISTRAL_API_KEY: str = "xT8aMNyrN28eXoWKEaSYHFn4RFMN6K0u" # Your Mistral API key
 MISTRAL_API_URL: str = "https://api.mistral.ai/v1/chat/completions"
 
 # --- Global Storage for Results ---
