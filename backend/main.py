@@ -7,14 +7,18 @@ import httpx # For making asynchronous HTTP requests to Mistral API
 import numpy as np
 import os
 import pdfplumber
+import markdown2
+from weasyprint import HTML, CSS
+from fastapi.responses import StreamingResponse
+import zipfile
+import datetime
 
 # --- Mistral API Configuration ---
 MISTRAL_MODEL: str = "mistral-large-latest" # Using Mistral API model
-MISTRAL_API_KEY: str = "xT8aMNyrN28eXoWKEaSYHFn4RFMN6K0u" # Your Mistral API key
+MISTRAL_API_KEY: str = "eEwwWdEQVzzvWEyODfPGgWGfcBeE3vgb" # Your Mistral API key
 MISTRAL_API_URL: str = "https://api.mistral.ai/v1/chat/completions"
 
 # --- Global Storage for Results ---
-# NOTE: This global state is maintained as per the original design.
 calculated_data = {
     "barrier_scores": None,
     "cost_factors": None,
@@ -394,21 +398,11 @@ def extract_content_from_pdf(barrier_name: str) -> str:
     return "\n\n".join(content)
 
 # --- Add this new helper function somewhere before your app = FastAPI() line ---
-
-import markdown2
-from weasyprint import HTML, CSS
-from fastapi.responses import StreamingResponse # Make sure to import this
-import zipfile
-
 def create_pdf_from_markdown(markdown_content: str, report_title: str) -> bytes:
     """
     Converts a markdown string into a styled PDF document in memory.
     """
-    # Convert markdown to HTML
     html_content = markdown2.markdown(markdown_content, extras=["tables", "fenced-code-blocks"])
-
-    # Basic CSS for styling the PDF for a professional look
-    # (You can customize this heavily)
     css_style = """
     @page {
         size: A4;
@@ -442,8 +436,6 @@ def create_pdf_from_markdown(markdown_content: str, report_title: str) -> bytes:
         background-color: #f2f2f2;
     }
     """
-
-    # Combine into a full HTML document
     full_html = f"""
     <!DOCTYPE html>
     <html>
@@ -457,20 +449,18 @@ def create_pdf_from_markdown(markdown_content: str, report_title: str) -> bytes:
     </body>
     </html>
     """
-
-    # Generate the PDF
     html_doc = HTML(string=full_html)
     css_doc = CSS(string=css_style)
-    
-    # Write PDF to an in-memory buffer
     pdf_bytes = html_doc.write_pdf(stylesheets=[css_doc])
-    
     return pdf_bytes
 
 async def generate_comprehensive_report_with_mistral(all_barrier_data: Dict[str, Dict]) -> str:
     if not MISTRAL_API_KEY:
         return "Mistral API key is not configured. Cannot generate report."
+    
+    current_time = datetime.datetime.now().strftime("%B %d, %Y - %I:%M %p IST")
     full_report_prompt = []
+    
     for barrier_name, data in all_barrier_data.items():
         score = data['total_score']
         level = get_barrier_level_from_score(score)
@@ -487,7 +477,9 @@ async def generate_comprehensive_report_with_mistral(all_barrier_data: Dict[str,
                 indicator_desc = f"**Budget allocation for employee training** - On a scale of 10, this SME's score for the barrier \"{barrier_name}\" is {score:.2f}, indicating a {level} problem. The analysis suggests the root cause is a strategic failure in resource allocation, evidenced by the insufficient budget allocated for employee training ({indicator['Input']}% of payroll). This financial constraint is the ultimate source of the training deficit, preventing the organization from procuring quality programs and demonstrating a lack of top-management commitment to upskilling the workforce. Leadership must view training as a strategic investment, not a cost, to enable future growth."
             barrier_report_section += f"{indicator_desc}\n\n"
         full_report_prompt.append(barrier_report_section)
+
     final_prompt = f"""
+    Report Generation Date and Time: {current_time}
     You are an expert consultant specializing in Indian SME readiness for IoT adoption. You have been provided with a detailed breakdown of barrier scores for an Indian SME. The scores are on a scale of 0-10, where 10 indicates the highest barrier. Please generate a professional, structured, and actionable report. The report should:
     1. Provide a brief overall summary of the SME's IoT readiness based on the collective scores.
     2. For each barrier and its sub-indicators, provide the analysis and interpretation below in a coherent manner.
@@ -498,7 +490,7 @@ async def generate_comprehensive_report_with_mistral(all_barrier_data: Dict[str,
     {full_report_prompt}
     """
     headers = {"Authorization": f"Bearer {MISTRAL_API_KEY}", "Content-Type": "application/json",}
-    payload = {"model": MISTRAL_MODEL, "messages": [{"role": "user", "content": final_prompt}], "temperature": 0.7, "max_tokens": 10000,}
+    payload = {"model": MISTRAL_MODEL, "messages": [{"role": "user", "content": final_prompt}], "temperature": 0.5, "max_tokens": 10000,}
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(MISTRAL_API_URL, headers=headers, json=payload, timeout=60.0)
@@ -512,49 +504,78 @@ async def generate_comprehensive_report_with_mistral(all_barrier_data: Dict[str,
     except httpx.RequestError as e: return f"Mistral API request error: {e}"
     except Exception as e: return f"An unexpected error occurred during Mistral API call: {e}"
 
-async def generate_roadmap_with_mistral(top_barriers_data: List[Dict]) -> Dict:
+async def generate_single_barrier_roadmap(barrier_data: Dict) -> str:
+    """
+    Generates a detailed, action-oriented roadmap for a single barrier using a new API call.
+    """
     if not MISTRAL_API_KEY:
-        return {"error": "Mistral API key is not configured. Cannot generate report."}
-    prompt_sections = []
-    for barrier in top_barriers_data:
-        barrier_name = barrier["barrier_name"]
-        barrier_score = barrier["barrier_score"]
-        roadmap_text = barrier["roadmap_text"]
-        severity = get_barrier_level_from_score(barrier_score)
-        prompt_sections.append(f"""
-### Barrier: {barrier_name}
-- **Barrier Score:** {barrier_score:.2f} / 10
-- **Severity:** {severity}
-- **Detailed Analysis and Action Plan:**
-{roadmap_text}
-""")
-    final_prompt = f"""
-You are an expert consultant specializing in Indian SME readiness for IoT adoption. You have been provided with a detailed analysis and action plan for the top three barriers identified for a specific Indian SME. Your task is to take the provided information and rewrite it into a cohesive, professional, and actionable roadmap report for the SME's leadership. The report should:
-1.  Begin with a professional greeting and disclaimer.
-2.  Provide a brief executive summary of the top three critical barriers.
-3.  For each of the three barriers, present the "Detailed Analysis & Action Plan" in a clear and structured format.
-4.  Ensure that the tone is consultative and the recommendations are clear and actionable.
-5.  Conclude with a professional closing statement.
-Here is the company details:
-{calculated_data.get("company_details", {})}
-Here is the detailed data for the top three barriers:
-{prompt_sections}
-"""
-    headers = {"Authorization": f"Bearer {MISTRAL_API_KEY}", "Content-Type": "application/json",}
-    payload = {"model": MISTRAL_MODEL, "messages": [{"role": "user", "content": final_prompt}], "temperature": 0.7, "max_tokens": 4000,}
+        return "Mistral API key is not configured."
+
+    barrier_name = barrier_data["barrier_name"]
+    barrier_score = barrier_data["barrier_score"]
+    
+    # You could also add more specific details from the input here if available
+    
+    prompt = f"""
+    As a strategic IoT consultant for Indian SMEs, your task is to create a highly detailed, actionable, and phased roadmap to address the critical barrier '{barrier_name}'. The SME has a Barrier Score of {barrier_score:.2f}/10 for this issue.
+
+    Your roadmap must be structured with the following sections:
+    
+    1.  **Barrier Analysis Summary:** A concise, sharp summary of why this barrier is a critical problem for the SME's IoT adoption.
+    2.  **Strategic Recommendations:** Present high-level, strategic actions to overcome this barrier.
+    3.  **Detailed 3-Phase Action Plan:**
+        * **Phase 1: Immediate Actions (0-3 months):** Describe specific, quick-win tasks and foundational steps. Include clear, measurable outcomes for this phase.
+        * **Phase 2: Intermediate Implementation (3-9 months):** Detail more complex initiatives and the resources required. Specify the expected results.
+        * **Phase 3: Long-Term Integration & Optimization (9-18+ months):** Outline a long-term strategy for sustained improvement and scaling.
+    4.  **Key Performance Indicators (KPIs) to Track:** List 3-5 specific metrics the SME should use to measure success.
+    
+    The company details are: {calculated_data.get("company_details", {})}
+    """
+
+    headers = {"Authorization": f"Bearer {MISTRAL_API_KEY}", "Content-Type": "application/json"}
+    payload = {
+        "model": MISTRAL_MODEL,
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.85,  # High temperature for creativity and detail
+        "max_tokens": 2000,
+    }
+
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.post(MISTRAL_API_URL, headers=headers, json=payload, timeout=120.0)
+            response = await client.post(MISTRAL_API_URL, headers=headers, json=payload, timeout=60.0)
             response.raise_for_status()
             mistral_response = response.json()
             if mistral_response and mistral_response.get("choices"):
-                return {"report": mistral_response["choices"][0]["message"]["content"]}
-            else:
-                return {"error": "Mistral API did not return a valid response for the report."}
-    except httpx.HTTPStatusError as e: return {"error": f"Mistral API HTTP error: {e.response.status_code} - {e.response.text}"}
-    except httpx.RequestError as e: return {"error": f"Mistral API request error: {e}"}
-    except Exception as e: return {"error": f"An unexpected error occurred: {e}"}
-        
+                return mistral_response["choices"][0]["message"]["content"]
+            return "Mistral API did not return a valid response for the single barrier roadmap."
+    except Exception as e:
+        return f"An unexpected error occurred: {e}"
+
+async def generate_roadmap_with_mistral(top_barriers_data: List[Dict]) -> Dict:
+    if not MISTRAL_API_KEY:
+        return {"error": "Mistral API key is not configured. Cannot generate report."}
+
+    roadmaps = []
+    for barrier in top_barriers_data:
+        # Call the new function for each barrier
+        detailed_roadmap = await generate_single_barrier_roadmap(barrier)
+        roadmaps.append(f"""
+## Strategic Roadmap for Barrier: {barrier['barrier_name']}
+
+{detailed_roadmap}
+""")
+    
+    # Assemble the final report from the individual roadmaps
+    final_report_content = """
+# Strategic Roadmap for IoT Readiness
+
+This document outlines a strategic, phased roadmap to address the most critical barriers hindering your company's IoT adoption, based on the ISRI analysis.
+
+"""
+    final_report_content += "\n\n".join(roadmaps)
+    
+    return {"report": final_report_content}
+
 # --- FastAPI App ---
 
 app = FastAPI(
@@ -658,7 +679,7 @@ async def generate_full_report(inputs: ComprehensiveInput):
         if ai_roadmap_result.get("error"):
             raise HTTPException(status_code=500, detail=f"Failed to generate AI roadmap: {ai_roadmap_result['error']}")
 
-        #Step 7: Convert both AI reports in PDF bytes
+        #Step 7: Convert both AI reports in PDF
         try:
             analysis_pdf_bytes = create_pdf_from_markdown(ai_barrier_report, "Barrier Analysis Report")
             roadmap_pdf_bytes = create_pdf_from_markdown(ai_roadmap_result.get("report", "Roadmap report not available."), "Strategic Roadmap Report")
