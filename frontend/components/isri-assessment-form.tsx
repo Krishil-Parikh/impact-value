@@ -215,9 +215,25 @@ export function ISRIAssessmentForm() {
   }
 
   const updateFormData = (section: keyof FormData, data: any) => {
+    const clamp = (n: number) => {
+      if (Number.isNaN(n)) return 0
+      return Math.min(1000, Math.max(0, n))
+    }
+    // Deep-ish clone and clamp numbers at leaf level
+    const processed: any = Array.isArray(data) ? [...data] : { ...data }
+    Object.keys(processed).forEach((k) => {
+      const v = processed[k]
+      if (typeof v === "number") processed[k] = clamp(v)
+      else if (v && typeof v === "object" && !Array.isArray(v)) {
+        processed[k] = { ...v }
+        Object.keys(processed[k]).forEach((ik) => {
+          if (typeof processed[k][ik] === "number") processed[k][ik] = clamp(processed[k][ik])
+        })
+      }
+    })
     setFormData((prev) => ({
       ...prev,
-      [section]: { ...prev[section], ...data },
+      [section]: { ...prev[section], ...processed },
     }))
   }
 

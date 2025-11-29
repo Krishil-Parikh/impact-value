@@ -16,8 +16,17 @@ interface CompanyDetailsStepProps {
 }
 
 export function CompanyDetailsStep({ data, onChange }: CompanyDetailsStepProps) {
+  const clamp = (n: number) => {
+    if (Number.isNaN(n)) return 0
+    return Math.min(1000, Math.max(0, n))
+  }
+
   const handleChange = (field: string, value: string | number) => {
-    onChange({ [field]: value })
+    if (typeof value === "number") {
+      onChange({ [field]: clamp(value) })
+    } else {
+      onChange({ [field]: value })
+    }
   }
 
   return (
@@ -84,9 +93,10 @@ export function CompanyDetailsStep({ data, onChange }: CompanyDetailsStepProps) 
                 type="number"
                 value={data.num_employees || ""}
                 onChange={(e) => handleChange("num_employees", Number.parseInt(e.target.value) || 0)}
-                placeholder="Enter total number of employees"
+                placeholder="Enter total number of employees (0-1000)"
                 className="mt-1"
-                min="1"
+                min={0}
+                max={1000}
                 required
               />
             </div>
@@ -100,9 +110,10 @@ export function CompanyDetailsStep({ data, onChange }: CompanyDetailsStepProps) 
                 step="0.01"
                 value={data.annual_revenue || ""}
                 onChange={(e) => handleChange("annual_revenue", Number.parseFloat(e.target.value) || 0)}
-                placeholder="Enter annual revenue in crores"
+                placeholder="Enter annual revenue in crores (0-1000)"
                 className="mt-1"
-                min="0"
+                min={0}
+                max={1000}
                 required
               />
             </div>

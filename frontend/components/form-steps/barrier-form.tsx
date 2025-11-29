@@ -310,8 +310,17 @@ const barrierFields = {
 export function BarrierForm({ barrierKey, data, onChange }: BarrierFormProps) {
   const fields = barrierFields[barrierKey as keyof typeof barrierFields] || []
 
+  const clamp = (n: number) => {
+    if (Number.isNaN(n)) return 0
+    return Math.min(1000, Math.max(0, n))
+  }
+
   const handleChange = (field: string, value: string | number) => {
-    onChange({ ...data, [field]: value })
+    if (typeof value === "number") {
+      onChange({ ...data, [field]: clamp(value) })
+    } else {
+      onChange({ ...data, [field]: value })
+    }
   }
 
   return (
@@ -345,9 +354,11 @@ export function BarrierForm({ barrierKey, data, onChange }: BarrierFormProps) {
                   field.type === "number" ? Number.parseFloat(e.target.value) || 0 : e.target.value,
                 )
               }
-              placeholder={field.placeholder}
+              placeholder={`${field.placeholder}${field.type === "number" ? " (0-1000)" : ""}`}
               step={field.type === "number" ? "0.01" : undefined}
-              min={field.type === "number" ? "0" : undefined}
+              min={field.type === "number" ? 0 : undefined}
+              max={field.type === "number" ? 1000 : undefined}
+              title={field.type === "number" ? "Enter a value between 0 and 1000" : undefined}
             />
           )}
         </div>

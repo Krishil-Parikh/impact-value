@@ -61,8 +61,13 @@ const categories = {
 }
 
 export function CostFactorsStep({ data, onChange }: CostFactorsStepProps) {
+  const clamp = (n: number) => {
+    if (Number.isNaN(n)) return 0
+    return Math.min(1000, Math.max(0, n))
+  }
+
   const handleChange = (field: string, value: number) => {
-    onChange({ ...data, [field]: value })
+    onChange({ ...data, [field]: clamp(value) })
   }
 
   const getCategoryFactors = (category: string) => {
@@ -105,11 +110,11 @@ export function CostFactorsStep({ data, onChange }: CostFactorsStepProps) {
                           id={factor.key}
                           type="number"
                           step="0.01"
-                          min="0"
-                          max="100"
+                          min={0}
+                          max={1000}
                           value={data[factor.key] || ""}
                           onChange={(e) => handleChange(factor.key, Number.parseFloat(e.target.value) || 0)}
-                          placeholder="0.00"
+                          placeholder="0 - 1000"
                           className="pr-8"
                         />
                         <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">
