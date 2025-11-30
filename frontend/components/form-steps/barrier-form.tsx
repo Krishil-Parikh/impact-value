@@ -1,16 +1,27 @@
 "use client"
 
+import * as React from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface BarrierFormProps {
   barrierKey: string
-  data: any
-  onChange: (data: any) => void
+  data: Record<string, any>
+  onChange: (data: Record<string, any>) => void
 }
 
-const barrierFields = {
+type FieldType = "number" | "select" | "text"
+
+interface Field {
+  key: string
+  label: string
+  type: FieldType
+  placeholder?: string
+  options?: string[]
+}
+
+const barrierFields: Record<string, Field[]> = {
   barrier1: [
     {
       key: "num_training_programs",
@@ -308,7 +319,7 @@ const barrierFields = {
 }
 
 export function BarrierForm({ barrierKey, data, onChange }: BarrierFormProps) {
-  const fields = barrierFields[barrierKey as keyof typeof barrierFields] || []
+  const fields: Field[] = barrierFields[barrierKey] || []
 
   const clamp = (n: number) => {
     if (Number.isNaN(n)) return 0
@@ -331,12 +342,12 @@ export function BarrierForm({ barrierKey, data, onChange }: BarrierFormProps) {
             {field.label}
           </Label>
           {field.type === "select" ? (
-            <Select value={data[field.key] || ""} onValueChange={(value) => handleChange(field.key, value)}>
+            <Select value={data[field.key] ?? ""} onValueChange={(value: string) => handleChange(field.key, value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select frequency" />
               </SelectTrigger>
               <SelectContent>
-                {field.options?.map((option) => (
+                {field.options?.map((option: string) => (
                   <SelectItem key={option} value={option}>
                     {option}
                   </SelectItem>
@@ -347,8 +358,8 @@ export function BarrierForm({ barrierKey, data, onChange }: BarrierFormProps) {
             <Input
               id={field.key}
               type={field.type}
-              value={data[field.key] || ""}
-              onChange={(e) =>
+              value={data[field.key] ?? ""}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 handleChange(
                   field.key,
                   field.type === "number" ? Number.parseFloat(e.target.value) || 0 : e.target.value,

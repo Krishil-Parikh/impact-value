@@ -91,7 +91,7 @@ export function CompanyDetailsStep({ data, onChange }: CompanyDetailsStepProps) 
               <Input
                 id="num_employees"
                 type="number"
-                value={data.num_employees || ""}
+                value={data.num_employees ?? ""}
                 onChange={(e) => handleChange("num_employees", Number.parseInt(e.target.value) || 0)}
                 placeholder="Enter total number of employees (0-1000)"
                 className="mt-1"
@@ -108,7 +108,7 @@ export function CompanyDetailsStep({ data, onChange }: CompanyDetailsStepProps) 
                 id="annual_revenue"
                 type="number"
                 step="0.01"
-                value={data.annual_revenue || ""}
+                value={data.annual_revenue ?? ""}
                 onChange={(e) => handleChange("annual_revenue", Number.parseFloat(e.target.value) || 0)}
                 placeholder="Enter annual revenue in crores (0-1000)"
                 className="mt-1"

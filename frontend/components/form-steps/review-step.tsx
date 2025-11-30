@@ -30,8 +30,8 @@ export function ReviewStep({ data, onSubmit, isSubmitting }: ReviewStepProps) {
     return (
       data.company_details.company_name &&
       data.company_details.industry &&
-      data.company_details.num_employees > 0 &&
-      data.company_details.annual_revenue > 0 &&
+      data.company_details.num_employees >= 0 &&
+      data.company_details.annual_revenue >= 0 &&
       getCompletedBarriers() === 15 &&
       getCompletedCostFactors() > 0 &&
       getCompletedKPIFactors() > 0

@@ -112,7 +112,7 @@ export function CostFactorsStep({ data, onChange }: CostFactorsStepProps) {
                           step="0.01"
                           min={0}
                           max={1000}
-                          value={data[factor.key] || ""}
+                          value={data[factor.key] ?? ""}
                           onChange={(e) => handleChange(factor.key, Number.parseFloat(e.target.value) || 0)}
                           placeholder="0 - 1000"
                           className="pr-8"
