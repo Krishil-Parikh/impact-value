@@ -252,7 +252,11 @@ export function ISRIAssessmentForm() {
   const handleSubmit = async () => {
     setIsSubmitting(true)
     try {
-      const response = await fetch("/api/generate-report", {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || ""
+
+      const endpoint = API_BASE ? `${API_BASE}/generate_report_async` : "/api/generate-report"
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
