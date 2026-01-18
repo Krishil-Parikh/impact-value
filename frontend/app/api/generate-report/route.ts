@@ -26,8 +26,11 @@ export async function POST(request: NextRequest) {
       kpi_factor_inputs: formData.kpi_factor_inputs,
     }
 
-    // Make request to the Python FastAPI backend
-    const response = await fetch("https://impact-value-1.onrender.com/generate_full_report", {
+    // Use backend URL from env when available (set NEXT_PUBLIC_API_URL in production)
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+
+    // Make request to the Python FastAPI backend (async endpoint)
+    const response = await fetch(`${API_BASE}/generate_report_async`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -39,18 +42,12 @@ export async function POST(request: NextRequest) {
       throw new Error(`Backend API error: ${response.status}`)
     }
 
-    // Get the ZIP file as a blob
-    const blob = await response.blob()
+    // Get session ID from backend
+    const result = await response.json()
 
-    // Return the blob as a response
-    return new NextResponse(blob, {
-      headers: {
-        "Content-Type": "application/x-zip-compressed",
-        "Content-Disposition": 'attachment; filename="ISRI_AI_Reports.zip"',
-      },
-    })
+    return NextResponse.json(result)
   } catch (error) {
-    console.error("Error generating report:", error)
-    return NextResponse.json({ error: "Failed to generate report" }, { status: 500 })
+    console.error("Error starting report generation:", error)
+    return NextResponse.json({ error: "Failed to start report generation" }, { status: 500 })
   }
 }

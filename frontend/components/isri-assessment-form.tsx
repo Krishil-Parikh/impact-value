@@ -261,33 +261,21 @@ export function ISRIAssessmentForm() {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to generate report")
+        throw new Error("Failed to start report generation")
       }
 
-      // Handle ZIP file download
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.style.display = "none"
-      a.href = url
-      a.download = "ISRI_AI_Reports.zip"
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-
-      toast({
-        title: "Reports Generated Successfully",
-        description: "Your ISRI assessment reports have been downloaded as a ZIP file.",
-      })
+      const result = await response.json()
+      
+      // Redirect to loading page with session ID
+      window.location.href = `/loading?session=${result.session_id}`
+      
     } catch (error) {
-      console.error("Error generating report:", error)
+      console.error("Error starting report generation:", error)
       toast({
         title: "Error",
-        description: "Failed to generate reports. Please try again.",
+        description: "Failed to start report generation. Please try again.",
         variant: "destructive",
       })
-    } finally {
       setIsSubmitting(false)
     }
   }

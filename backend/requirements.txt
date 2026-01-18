@@ -6,4 +6,6 @@ httpx==0.27.2
 pdfplumber==0.11.4
 markdown2==2.5.1
 weasyprint==63.1
-python-multipart==0.0.12   # Needed if you use file uploads
+python-multipart==0.0.12
+pymongo==4.6.1
+python-dotenv==1.0.0

@@ -23,9 +23,9 @@ export function CompanyDetailsStep({ data, onChange }: CompanyDetailsStepProps) 
 
   const handleChange = (field: string, value: string | number) => {
     if (typeof value === "number") {
-      onChange({ [field]: clamp(value) })
+      onChange({ ...data, [field]: clamp(value) })
     } else {
-      onChange({ [field]: value })
+      onChange({ ...data, [field]: value })
     }
   }
 
