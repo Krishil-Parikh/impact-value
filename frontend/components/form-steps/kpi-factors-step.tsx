@@ -82,16 +82,17 @@ export function KPIFactorsStep({ data, onChange }: KPIFactorsStepProps) {
                 <CardDescription>Toggle on the KPIs that are important to your business</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-3 sm:gap-4">
                   {categoryFactors.map((factor) => (
-                    <div key={factor.key} className="flex items-center justify-between space-x-2 p-3 rounded-lg border">
-                      <Label htmlFor={factor.key} className="text-sm font-medium cursor-pointer flex-1">
+                    <div key={factor.key} className="flex items-center justify-between space-x-2 p-2.5 sm:p-3 rounded-lg border">
+                      <Label htmlFor={factor.key} className="text-xs sm:text-sm font-medium cursor-pointer flex-1 leading-tight">
                         {factor.label}
                       </Label>
                       <Switch
                         id={factor.key}
                         checked={data[factor.key] === 1}
                         onCheckedChange={(checked) => handleChange(factor.key, checked)}
+                        className="flex-shrink-0"
                       />
                     </div>
                   ))}
@@ -103,18 +104,18 @@ export function KPIFactorsStep({ data, onChange }: KPIFactorsStepProps) {
       </div>
 
       <Card className="bg-muted/50">
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-3">
-            <div className="bg-secondary/10 p-2 rounded-lg">
-              <Target className="h-5 w-5 text-secondary" />
+        <CardContent className="pt-4 sm:pt-6 p-4 sm:p-6">
+          <div className="flex items-start gap-2 sm:gap-3">
+            <div className="bg-secondary/10 p-1.5 sm:p-2 rounded-lg flex-shrink-0">
+              <Target className="h-4 w-4 sm:h-5 sm:w-5 text-secondary" />
             </div>
             <div>
-              <h3 className="font-medium text-primary mb-1">KPI Selection Guidelines</h3>
-              <p className="text-sm text-muted-foreground mb-2">
+              <h3 className="font-medium text-primary mb-1 text-sm sm:text-base">KPI Selection Guidelines</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-2">
                 Select KPIs that your organization actively measures and considers critical for success. You don't need
                 to select all KPIs - focus on those most relevant to your business model.
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 The more KPIs you track in an area, the higher the potential impact of related barriers on your business
                 performance.
               </p>

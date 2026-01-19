@@ -309,29 +309,29 @@ export function ISRIAssessmentForm() {
   const progress = ((currentStep + 1) / steps.length) * 100
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto px-2 sm:px-4">
       {/* Progress Header */}
-      <Card className="mb-8">
-        <CardHeader>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <CardTitle className="font-serif text-2xl text-primary">{steps[currentStep].title}</CardTitle>
-              <CardDescription className="text-base">{steps[currentStep].description}</CardDescription>
+      <Card className="mb-4 sm:mb-8">
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-1">
+              <CardTitle className="font-serif text-xl sm:text-2xl text-primary">{steps[currentStep].title}</CardTitle>
+              <CardDescription className="text-sm sm:text-base mt-1">{steps[currentStep].description}</CardDescription>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
               <Button
                 variant="outline"
                 onClick={fillSampleData}
-                className="flex items-center gap-2 text-sm bg-transparent"
+                className="flex items-center gap-2 text-xs sm:text-sm bg-transparent w-full sm:w-auto"
               >
-                <Zap className="h-4 w-4" />
+                <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
                 Fill Sample Data
               </Button>
-              <div className="text-right">
-                <div className="text-sm text-muted-foreground mb-2">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="text-xs sm:text-sm text-muted-foreground">
                   Step {currentStep + 1} of {steps.length}
                 </div>
-                <Progress value={progress} className="w-32" />
+                <Progress value={progress} className="flex-1 sm:w-32" />
               </div>
             </div>
           </div>
@@ -339,8 +339,8 @@ export function ISRIAssessmentForm() {
       </Card>
 
       {/* Step Content */}
-      <Card className="mb-8">
-        <CardContent className="p-8">
+      <Card className="mb-4 sm:mb-8">
+        <CardContent className="p-4 sm:p-6 lg:p-8">
           {currentStep === 0 && (
             <CompanyDetailsStep
               data={formData.company_details}
@@ -367,46 +367,49 @@ export function ISRIAssessmentForm() {
       </Card>
 
       {/* Navigation */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center gap-2 sm:gap-4">
         <Button
           variant="outline"
           onClick={handlePrevious}
           disabled={currentStep === 0}
-          className="flex items-center gap-2 bg-transparent"
+          className="flex items-center gap-1 sm:gap-2 bg-transparent text-xs sm:text-sm px-3 sm:px-4 h-9 sm:h-10"
         >
-          <ChevronLeft className="h-4 w-4" />
-          Previous
+          <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+          <span className="hidden xs:inline">Previous</span>
+          <span className="xs:hidden">Prev</span>
         </Button>
 
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 sm:gap-2">
           {steps.map((_, index) => (
             <div
               key={index}
-              className={`w-3 h-3 rounded-full transition-colors ${index <= currentStep ? "bg-secondary" : "bg-muted"}`}
+              className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-colors ${index <= currentStep ? "bg-secondary" : "bg-muted"}`}
             />
           ))}
         </div>
 
         {currentStep < steps.length - 1 ? (
-          <Button onClick={handleNext} className="flex items-center gap-2 bg-secondary hover:bg-secondary/90">
+          <Button onClick={handleNext} className="flex items-center gap-1 sm:gap-2 bg-secondary hover:bg-secondary/90 text-xs sm:text-sm px-3 sm:px-4 h-9 sm:h-10">
             Next
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         ) : (
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="flex items-center gap-2 bg-secondary hover:bg-secondary/90"
+            className="flex items-center gap-1 sm:gap-2 bg-secondary hover:bg-secondary/90 text-xs sm:text-sm px-3 sm:px-4 h-9 sm:h-10"
           >
             {isSubmitting ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Generating Reports...
+                <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
+                <span className="hidden xs:inline">Generating Reports...</span>
+                <span className="xs:hidden">Generating...</span>
               </>
             ) : (
               <>
-                <Download className="h-4 w-4" />
-                Generate Reports
+                <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Generate Reports</span>
+                <span className="xs:hidden">Generate</span>
               </>
             )}
           </Button>

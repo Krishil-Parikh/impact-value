@@ -99,7 +99,7 @@ export function CostFactorsStep({ data, onChange }: CostFactorsStepProps) {
                 <CardDescription>Enter values as percentage of annual revenue</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 sm:gap-6">
                   {categoryFactors.map((factor) => (
                     <div key={factor.key} className="space-y-2">
                       <Label htmlFor={factor.key} className="text-sm font-medium">
@@ -131,18 +131,18 @@ export function CostFactorsStep({ data, onChange }: CostFactorsStepProps) {
       </div>
 
       <Card className="bg-muted/50">
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-3">
-            <div className="bg-secondary/10 p-2 rounded-lg">
-              <Calculator className="h-5 w-5 text-secondary" />
+        <CardContent className="pt-4 sm:pt-6 p-4 sm:p-6">
+          <div className="flex items-start gap-2 sm:gap-3">
+            <div className="bg-secondary/10 p-1.5 sm:p-2 rounded-lg flex-shrink-0">
+              <Calculator className="h-4 w-4 sm:h-5 sm:w-5 text-secondary" />
             </div>
             <div>
-              <h3 className="font-medium text-primary mb-1">Cost Factor Guidelines</h3>
-              <p className="text-sm text-muted-foreground mb-2">
+              <h3 className="font-medium text-primary mb-1 text-sm sm:text-base">Cost Factor Guidelines</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-2">
                 These percentages represent how much each cost category contributes to your total annual revenue. For
                 example, if your labour costs are ₹10 crores and your annual revenue is ₹100 crores, enter 10%.
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Accurate cost data helps identify which barriers have the highest financial impact on your organization.
               </p>
             </div>

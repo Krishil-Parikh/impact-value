@@ -82,16 +82,16 @@ export function BarriersStep({ data, onChange }: BarriersStepProps) {
       </div>
 
       <Tabs value={activeCategory} onValueChange={setActiveCategory}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-1 h-auto p-1">
           {barrierCategories.map((category) => {
             const completed = getCompletedBarriers(category.barriers)
             const total = category.barriers.length
 
             return (
-              <TabsTrigger key={category.id} value={category.id} className="relative">
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-xs font-medium">{category.title}</span>
-                  <Badge variant={completed === total ? "default" : "secondary"} className="text-xs">
+              <TabsTrigger key={category.id} value={category.id} className="relative data-[state=active]:bg-secondary py-2 sm:py-3 px-2">
+                <div className="flex flex-col items-center gap-0.5 sm:gap-1">
+                  <span className="text-[10px] sm:text-xs font-medium leading-tight text-center">{category.title}</span>
+                  <Badge variant={completed === total ? "default" : "secondary"} className="text-[9px] sm:text-xs px-1.5 py-0">
                     {completed}/{total}
                   </Badge>
                 </div>
@@ -109,16 +109,16 @@ export function BarriersStep({ data, onChange }: BarriersStepProps) {
               </CardHeader>
             </Card>
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {category.barriers.map((barrier) => (
                 <Card key={barrier.key}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-3 text-lg">
-                      <div className={`w-3 h-3 rounded-full ${barrier.color}`} />
-                      {barrier.title}
+                  <CardHeader className="p-4 sm:p-6">
+                    <CardTitle className="flex items-center gap-2 sm:gap-3 text-base sm:text-lg">
+                      <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${barrier.color}`} />
+                      <span className="text-sm sm:text-base leading-tight">{barrier.title}</span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-4 sm:p-6 pt-0">
                     <BarrierForm
                       barrierKey={barrier.key}
                       data={data[barrier.key] || {}}
