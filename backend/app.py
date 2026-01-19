@@ -25,6 +25,9 @@ from services.database_service import DatabaseService
 from utils.pdf_utils import create_pdf_from_markdown
 from config.settings import OUTPUT_DIR, BARRIER_ANALYSIS_DIR
 
+# Get CORS origins from environment variable
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+
 # Store for tracking report generation status
 report_status: Dict[str, Dict] = {}
 
@@ -38,7 +41,7 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],  # Add your frontend URLs
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

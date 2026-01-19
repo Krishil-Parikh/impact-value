@@ -123,3 +123,30 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Responsive helpers */
+img, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Ensure form elements wrap gracefully on small screens */
+.responsive-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.responsive-row > * {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+/* Make cards and panels full-width on small screens */
+.card-full-sm {
+  width: 100%;
+}
+
+/* Utility: compact gutters on very small devices */
+@media (max-width: 420px) {
+  .mx-4 { margin-left: 0.5rem; margin-right: 0.5rem; }
+}

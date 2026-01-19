@@ -28,7 +28,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${playfairDisplay.variable} ${sourceSansPro.variable} antialiased`}>
-      <body>{children}</body>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
+      <body className="min-h-screen bg-background text-foreground">
+        <div className="mx-4 sm:mx-6 md:mx-10 lg:mx-16 xl:mx-24">{children}</div>
+      </body>
     </html>
   )
 }
