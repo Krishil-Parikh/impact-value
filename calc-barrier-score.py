@@ -1,7 +1,6 @@
 from datetime import datetime
 import json
 import csv
-from pymongo import MongoClient
 
 import os
 from mistralai import Mistral
@@ -18,24 +17,6 @@ def call_llm(prompt):
         max_tokens=300
     )
     return response.choices[0].message.content
-
-def get_db():
-    client = MongoClient("mongodb://localhost:27017/")  # or your Atlas URI
-    db = client["iot_scores_db"]  # database name
-    return db
-
-def save_raw_to_mongodb(company, barriers, kpis, costs):
-    db = get_db()
-
-    document = {
-        "company_details": company,
-        "barriers_raw": barriers,
-        "kpi_raw": kpis,
-        "cost_raw": costs
-    }
-
-    db.raw_inputs.insert_one(document)
-    print("✔ Raw extracted data saved to MongoDB (raw_inputs collection)")
 
 # -------------------------------
 # 1. Extract company details
@@ -483,15 +464,6 @@ def calc_impact_value(kpi_score: dict, barrier_score: dict, cost_score: dict):
 
     return impact_values
 
-def save_report_metadata_to_mongodb(barrier_id, pdf_path):
-    db = get_db()
-
-    db.generated_reports.insert_one({
-        "barrier_id": barrier_id,
-        "pdf_path": pdf_path,
-        "generated_at": datetime.now()
-    })
-
 import zipfile
 
 def zip_reports(pdf_dir, zip_name="Barrier_Reports.zip"):
@@ -506,11 +478,6 @@ def zip_reports(pdf_dir, zip_name="Barrier_Reports.zip"):
                 )
 
     return zip_path
-
-def save_impact_scores_to_mongodb(impact_scores: dict):
-    db = get_db()
-    db.impact_scores.insert_one(impact_scores)
-    print("✔ Impact scores saved to MongoDB (impact_scores collection)")
 
 # def generate_barrier_reports(
 #     barrier_templates_path,
@@ -632,8 +599,6 @@ def generate_barrier_reports_top_3(
         html = template.render(context)
         pdf_path = f"{output_dir}/Barrier_{bid}_Report.pdf"
         HTML(string=html, base_url=".").write_pdf(pdf_path)
-
-        save_report_metadata_to_mongodb(bid, pdf_path)
 
     zip_path = zip_reports(output_dir)
     print(f"✔ Reports generated & zipped: {zip_path}")
@@ -790,31 +755,9 @@ def generate_top_3_barrier_roadmaps(
 # -------------------------------
 # SAVE BARRIER SCORES TO CSV
 # -------------------------------
-def save_barrier_scores_to_mongodb(barrier_scores: dict):
-    db = get_db()
-
-    db.barrier_scores.insert_one(barrier_scores)
-
-    print("✔ Barrier scores saved to MongoDB (barrier_scores collection)")
-
-
 # -------------------------------
 # SAVE COST FACTOR SCORES TO CSV
 # -------------------------------
-def save_cost_scores_to_mongodb(cost_scores: dict):
-    db = get_db()
-
-    db.cost_factor_scores.insert_one(cost_scores)
-
-    print("✔ Cost factor scores saved to MongoDB (cost_factor_scores collection)")
-    
-
-def save_kpi_scores_to_mongodb(kpi_scores: dict):
-    db = get_db()
-
-    db.kpi_scores.insert_one(kpi_scores)
-
-    print("✔ KPI scores saved to MongoDB (kpi_scores collection)")
 
 # -------------------------------
 # MAIN EXECUTION
@@ -829,20 +772,14 @@ if __name__ == "__main__":
     kpis = extract_kpi_factors(data)
     costs = extract_cost_factors(data)
 
-    # Save raw inputs
-    save_raw_to_mongodb(company, barriers, kpis, costs)
-
     # Barrier scores
     computed_scores = calc_barrier_scores(barriers)
-    save_barrier_scores_to_mongodb(computed_scores)
 
     # Cost scores
     cost_scores = calc_cost_factor_scores(costs)
-    save_cost_scores_to_mongodb(cost_scores)
 
     # KPI scores
     kpi_scores = calc_kpi_scores(kpis)
-    save_kpi_scores_to_mongodb(kpi_scores)
 
     # Impact scores
     impact_scores = calc_impact_value(
@@ -850,7 +787,6 @@ if __name__ == "__main__":
         barrier_score=computed_scores,
         cost_score=cost_scores
     )
-    save_impact_scores_to_mongodb(impact_scores)
 
     # Generate PDFs + ZIP
     zip_path = generate_barrier_reports_top_3(

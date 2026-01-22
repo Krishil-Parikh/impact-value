@@ -50,7 +50,7 @@ def calculate_barrier_scores(barriers: Dict[str, BaseModel]) -> Dict[str, Dict[s
     # BARRIER 2: Resistance to change
     b = barriers["barrier2"]
     s1 = safe_div(b.employee_turnover_rate_pct, 20) * 0.4 * 10
-    s2 = (b.pct_employees_resisting / 100) * 0.35 * 10
+    s2 = (1 - b.pct_employees_resisting / 100) * 0.35 * 10
     s3 = (1 - safe_div(b.num_feedback_sessions, 12)) * 0.25 * 10
     total = s1 + s2 + s3
     results["barrier2"] = {
@@ -204,7 +204,7 @@ def calculate_barrier_scores(barriers: Dict[str, BaseModel]) -> Dict[str, Dict[s
     # BARRIER 11: Dependency on External Vendors
     b = barriers["barrier11"]
     s1 = (b.pct_critical_operations_reliant_vendor / 100) * 0.4 * 10
-    s2 = safe_div(b.num_vendor_delays_disruptions_per_year, 5) * 0.4 * 10
+    s2 = (1 - (1 - safe_div(b.num_vendor_delays_disruptions_per_year, 5))) * 0.4 * 10
     s3 = (b.cost_vendor_contracts_pct_op_expenses / 100) * 0.2 * 10
     total = s1 + s2 + s3
     results["barrier11"] = {
@@ -221,7 +221,7 @@ def calculate_barrier_scores(barriers: Dict[str, BaseModel]) -> Dict[str, Dict[s
     # BARRIER 12: High Implementation Cost
     b = barriers["barrier12"]
     s1 = (b.pct_it_budget_allocated_iot / 100) * 0.4 * 10
-    s2 = safe_div(b.annual_maintenance_costs_pct_op_costs, 5) * 0.3 * 10
+    s2 = (1 - (1 - safe_div(b.annual_maintenance_costs_pct_op_costs, 5))) * 0.3 * 10
     s3 = (b.integration_costs_pct_total_project_cost / 100) * 0.3 * 10
     total = s1 + s2 + s3
     results["barrier12"] = {
@@ -240,7 +240,7 @@ def calculate_barrier_scores(barriers: Dict[str, BaseModel]) -> Dict[str, Dict[s
     s1 = safe_div(b.num_regulatory_violations_penalties, 4) * 0.5 * 10
     s2 = (1 - b.pct_compliance_audits_passed_without_issues / 100) * 0.3 * 10
     freq_map = {"Monthly": 0.25, "Quarterly": 0.5, "Bi-Annually": 0.75, "Annually": 1.0}
-    s3 = freq_map.get(b.freq_updates_internal_policies, 0.75) * 0.2 * 10
+    s3 = freq_map.get(b.freq_updates_internal_policies, 0.75) * 0.5 * 10
     total = s1 + s2 + s3
     results["barrier13"] = {
         "name": "Compliance with Sector-Specific Regulations",

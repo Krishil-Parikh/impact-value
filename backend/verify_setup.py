@@ -37,7 +37,7 @@ def check_imports():
         return False
     
     try:
-        from config.settings import MISTRAL_API_KEY, MONGODB_URI
+        from config.settings import OPENROUTER_API_KEY
         print("✓ Config imported successfully")
     except ImportError as e:
         print(f"✗ Failed to import config: {e}")
@@ -55,7 +55,6 @@ def check_dependencies():
         'uvicorn',
         'pydantic',
         'httpx',
-        'pymongo',
         'weasyprint',
         'markdown2'
     ]
@@ -81,7 +80,7 @@ def check_environment():
     """Check environment variables"""
     print("\n🔐 Checking environment...")
     
-    from config.settings import OPENROUTER_API_KEY, MONGODB_URI
+    from config.settings import OPENROUTER_API_KEY
     
     if not OPENROUTER_API_KEY or OPENROUTER_API_KEY == "your_openrouter_api_key_here":
         print("⚠️  OPENROUTER_API_KEY not configured properly")
@@ -90,28 +89,7 @@ def check_environment():
     else:
         print("✓ OPENROUTER_API_KEY configured")
     
-    print(f"✓ MONGODB_URI: {MONGODB_URI}")
-    
     return True
-
-
-def test_mongodb():
-    """Test MongoDB connection"""
-    print("\n🗄️  Testing MongoDB connection...")
-    
-    try:
-        from services.database_service import DatabaseService
-        db = DatabaseService()
-        # Try a simple operation
-        db.db.list_collection_names()
-        db.close()
-        print("✓ MongoDB connection successful")
-        return True
-    except Exception as e:
-        print(f"⚠️  MongoDB connection failed: {e}")
-        print("   Make sure MongoDB is running")
-        print("   Run: mongosh (to check)")
-        return False
 
 
 def main():
@@ -123,8 +101,7 @@ def main():
     checks = [
         ("Import Check", check_imports),
         ("Dependencies Check", check_dependencies),
-        ("Environment Check", check_environment),
-        ("MongoDB Check", test_mongodb)
+        ("Environment Check", check_environment)
     ]
     
     results = []

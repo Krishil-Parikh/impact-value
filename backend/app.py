@@ -21,7 +21,6 @@ from services.cost_service import calculate_cost_factor_scores
 from services.kpi_service import calculate_kpi_scores
 from services.isri_service import calculate_impact_values, get_top_n_barriers
 from services.ai_service import generate_comprehensive_barrier_analysis, generate_strategic_roadmap
-from services.database_service import DatabaseService
 from utils.pdf_utils import create_pdf_from_markdown
 from config.settings import OUTPUT_DIR, BARRIER_ANALYSIS_DIR
 
@@ -60,9 +59,6 @@ async def generate_reports_background(session_id: str, inputs: ComprehensiveInpu
             "error": None
         }
         
-        # Initialize database service
-        db = DatabaseService()
-        
         # Extract company details
         company_details = inputs.company_details.dict()
         
@@ -92,22 +88,8 @@ async def generate_reports_background(session_id: str, inputs: ComprehensiveInpu
         report_status[session_id]["message"] = "Computing impact values..."
         impact_values = calculate_impact_values(barrier_scores, cost_scores, kpi_scores)
         
-        # STEP 5: Save to database
+        # STEP 5: Generate comprehensive analysis
         report_status[session_id]["progress"] = 50
-        report_status[session_id]["message"] = "Saving calculations to database..."
-        db.save_raw_inputs(
-            company=company_details,
-            barriers={k: v.dict() for k, v in barriers.items()},
-            kpis=inputs.kpi_factor_inputs.dict(),
-            costs=inputs.cost_factor_inputs.dict()
-        )
-        db.save_barrier_scores(barrier_scores)
-        db.save_cost_scores(cost_scores)
-        db.save_kpi_scores(kpi_scores)
-        db.save_impact_values(impact_values)
-        
-        # STEP 6: Generate comprehensive analysis
-        report_status[session_id]["progress"] = 55
         report_status[session_id]["message"] = "Generating comprehensive barrier analysis (AI)..."
         comprehensive_analysis = await generate_comprehensive_barrier_analysis(
             company_details=company_details,
@@ -115,8 +97,8 @@ async def generate_reports_background(session_id: str, inputs: ComprehensiveInpu
             impact_values=impact_values
         )
         
-        # STEP 7: Convert comprehensive analysis to PDF
-        report_status[session_id]["progress"] = 70
+        # STEP 6: Convert comprehensive analysis to PDF
+        report_status[session_id]["progress"] = 60
         report_status[session_id]["message"] = "Converting comprehensive analysis to PDF..."
         analysis_pdf = create_pdf_from_markdown(
             markdown_content=comprehensive_analysis,
@@ -125,13 +107,13 @@ async def generate_reports_background(session_id: str, inputs: ComprehensiveInpu
         report_status[session_id]["comprehensive_pdf"] = analysis_pdf
         report_status[session_id]["message"] = "✅ Comprehensive analysis ready"
         
-        # STEP 8: Get top 3 barriers
-        report_status[session_id]["progress"] = 75
+        # STEP 7: Get top 3 barriers
+        report_status[session_id]["progress"] = 70
         report_status[session_id]["message"] = "Identifying top 3 critical barriers..."
         top_3_barriers = get_top_n_barriers(impact_values, n=3)
         
-        # STEP 9: Generate strategic roadmap
-        report_status[session_id]["progress"] = 82
+        # STEP 8: Generate strategic roadmap
+        report_status[session_id]["progress"] = 80
         report_status[session_id]["message"] = "Generating strategic roadmap (AI)..."
         strategic_roadmap = await generate_strategic_roadmap(
             company_details=company_details,
@@ -139,8 +121,8 @@ async def generate_reports_background(session_id: str, inputs: ComprehensiveInpu
             barrier_scores=barrier_scores
         )
         
-        # STEP 10: Convert roadmap to PDF
-        report_status[session_id]["progress"] = 92
+        # STEP 9: Convert roadmap to PDF
+        report_status[session_id]["progress"] = 90
         report_status[session_id]["message"] = "Converting strategic roadmap to PDF..."
         roadmap_pdf = create_pdf_from_markdown(
             markdown_content=strategic_roadmap,
@@ -152,8 +134,6 @@ async def generate_reports_background(session_id: str, inputs: ComprehensiveInpu
         report_status[session_id]["status"] = "completed"
         report_status[session_id]["progress"] = 100
         report_status[session_id]["message"] = "✅ All reports generated successfully"
-        
-        db.close()
         
     except Exception as e:
         report_status[session_id]["status"] = "error"
@@ -286,7 +266,6 @@ async def health_check():
     """Detailed health check"""
     return {
         "status": "healthy",
-        "database": "connected",
         "ai_service": "configured"
     }
 
@@ -302,8 +281,7 @@ async def generate_full_report(inputs: ComprehensiveInput):
     5. Generates comprehensive AI barrier analysis for ALL 15 barriers
     6. Identifies top 3 critical barriers
     7. Generates detailed strategic roadmap for top 3 barriers
-    8. Saves all data to MongoDB
-    9. Returns both reports as PDFs in a ZIP file
+    8. Returns both reports as PDFs in a ZIP file
     
     Args:
         inputs: ComprehensiveInput model containing all company, barrier, cost, and KPI data
@@ -314,9 +292,6 @@ async def generate_full_report(inputs: ComprehensiveInput):
         - Strategic_Roadmap_Top_3.pdf (detailed roadmap for top 3)
     """
     try:
-        # Initialize database service
-        db = DatabaseService()
-        
         # Extract company details
         company_details = inputs.company_details.dict()
         
@@ -355,20 +330,7 @@ async def generate_full_report(inputs: ComprehensiveInput):
         print("🎯 Calculating impact values...")
         impact_values = calculate_impact_values(barrier_scores, cost_scores, kpi_scores)
         
-        # STEP 5: Save to database
-        print("💾 Saving to database...")
-        db.save_raw_inputs(
-            company=company_details,
-            barriers={k: v.dict() for k, v in barriers.items()},
-            kpis=inputs.kpi_factor_inputs.dict(),
-            costs=inputs.cost_factor_inputs.dict()
-        )
-        db.save_barrier_scores(barrier_scores)
-        db.save_cost_scores(cost_scores)
-        db.save_kpi_scores(kpi_scores)
-        db.save_impact_values(impact_values)
-        
-        # STEP 6: Generate comprehensive barrier analysis for ALL 15 barriers
+        # STEP 5: Generate comprehensive barrier analysis for ALL 15 barriers
         print("🤖 Generating comprehensive barrier analysis (all 15 barriers)...")
         comprehensive_analysis = await generate_comprehensive_barrier_analysis(
             company_details=company_details,
@@ -376,7 +338,7 @@ async def generate_full_report(inputs: ComprehensiveInput):
             impact_values=impact_values
         )
         
-        # STEP 7: Get top 3 barriers by impact value
+        # STEP 6: Get top 3 barriers by impact value
         print("🔝 Identifying top 3 critical barriers...")
         top_3_barriers = get_top_n_barriers(impact_values, n=3)
         
@@ -385,7 +347,7 @@ async def generate_full_report(inputs: ComprehensiveInput):
         for rank, (barrier_key, data) in enumerate(top_3_barriers, 1):
             print(f"  {rank}. {data['barrier_name']} - Impact: {data['impact_value']:.4f}")
         
-        # STEP 8: Generate strategic roadmap for top 3 barriers
+        # STEP 7: Generate strategic roadmap for top 3 barriers
         print("\n🗺️ Generating strategic roadmap (top 3 barriers)...")
         strategic_roadmap = await generate_strategic_roadmap(
             company_details=company_details,
@@ -393,7 +355,7 @@ async def generate_full_report(inputs: ComprehensiveInput):
             barrier_scores=barrier_scores
         )
         
-        # STEP 9: Convert reports to PDFs
+        # STEP 8: Convert reports to PDFs
         print("📄 Converting reports to PDFs...")
         try:
             analysis_pdf = create_pdf_from_markdown(
@@ -411,7 +373,7 @@ async def generate_full_report(inputs: ComprehensiveInput):
                 detail=f"Failed to generate PDFs: {str(pdf_error)}"
             )
         
-        # STEP 10: Create ZIP file containing both PDFs
+        # STEP 9: Create ZIP file containing both PDFs
         print("📦 Creating ZIP archive...")
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
@@ -419,9 +381,6 @@ async def generate_full_report(inputs: ComprehensiveInput):
             zf.writestr("02_Strategic_Roadmap_Top_3_Barriers.pdf", roadmap_pdf)
         
         zip_buffer.seek(0)
-        
-        # Close database connection
-        db.close()
         
         print("✅ Report generation complete!")
         

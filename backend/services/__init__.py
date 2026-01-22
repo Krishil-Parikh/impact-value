@@ -6,7 +6,6 @@ from .cost_service import calculate_cost_factor_scores
 from .kpi_service import calculate_kpi_scores
 from .isri_service import calculate_impact_values, get_top_n_barriers
 from .ai_service import generate_comprehensive_barrier_analysis, generate_strategic_roadmap
-from .database_service import DatabaseService
 
 __all__ = [
     "calculate_barrier_scores",
@@ -16,6 +15,5 @@ __all__ = [
     "calculate_impact_values",
     "get_top_n_barriers",
     "generate_comprehensive_barrier_analysis",
-    "generate_strategic_roadmap",
-    "DatabaseService"
+    "generate_strategic_roadmap"
 ]
