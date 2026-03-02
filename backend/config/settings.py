@@ -14,7 +14,7 @@ load_dotenv(dotenv_path=str(dotenv_path))
 # OpenRouter AI Configuration - prefer value from environment/.env
 OPENROUTER_API_KEY: Optional[str] = os.getenv("OPENROUTER_API_KEY")
 # OPENROUTER_MODEL: str = "mistralai/mistral-large-2512"
-OPENROUTER_MODEL: str = "mistralai/mistral-7b-instruct"
+OPENROUTER_MODEL: str = "meta-llama/llama-3.3-70b-instruct:free"
 OPENROUTER_API_URL: str = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_SITE_URL: str = os.getenv("SITE_URL", "http://localhost:3000")
 OPENROUTER_SITE_NAME: str = os.getenv("SITE_NAME", "ISRI Assessment")
