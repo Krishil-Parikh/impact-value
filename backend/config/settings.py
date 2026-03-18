@@ -14,7 +14,7 @@ load_dotenv(dotenv_path=str(dotenv_path))
 # OpenRouter AI Configuration - prefer value from environment/.env
 OPENROUTER_API_KEY: Optional[str] = os.getenv("OPENROUTER_API_KEY")
 # OPENROUTER_MODEL: str = "mistralai/mistral-large-2512"
-OPENROUTER_MODEL: str = "meta-llama/llama-3.3-70b-instruct:free"
+OPENROUTER_MODEL: str = "mistralai/mixtral-8x7b-instruct"
 OPENROUTER_API_URL: str = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_SITE_URL: str = os.getenv("SITE_URL", "http://localhost:3000")
 OPENROUTER_SITE_NAME: str = os.getenv("SITE_NAME", "ISRI Assessment")
@@ -31,5 +31,5 @@ BARRIER_ANALYSIS_DIR = "barrier_analysis"
 
 # AI Generation Settings
 AI_TEMPERATURE = 0.5
-AI_MAX_TOKENS = 4000  # Reduced to fit within credit limits
-AI_TIMEOUT = 90.0
+AI_MAX_TOKENS = 8000  # Enough room for verbose models like Llama 3.1
+AI_TIMEOUT = 120.0

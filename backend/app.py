@@ -158,6 +158,17 @@ async def generate_report_async(inputs: ComprehensiveInput, background_tasks: Ba
     Frontend can poll /status/{session_id} to check progress
     """
     session_id = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
+
+    # Store original input payload for retry support
+    report_status[session_id] = {
+        "status": "queued",
+        "progress": 0,
+        "message": "Queued for report generation...",
+        "comprehensive_pdf": None,
+        "roadmap_pdf": None,
+        "error": None,
+        "input_payload": inputs.model_dump(),
+    }
     
     # Start background task
     background_tasks.add_task(generate_reports_background, session_id, inputs)
@@ -169,6 +180,36 @@ async def generate_report_async(inputs: ComprehensiveInput, background_tasks: Ba
     }
 
 
+@app.post("/retry/{session_id}", summary="Retry failed async report generation")
+async def retry_report_generation(session_id: str, background_tasks: BackgroundTasks):
+    """Retry report generation for an existing session using original input payload."""
+    if session_id not in report_status:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    payload = report_status[session_id].get("input_payload")
+    if not payload:
+        raise HTTPException(status_code=400, detail="Retry not available for this session")
+
+    if report_status[session_id].get("status") == "processing":
+        raise HTTPException(status_code=409, detail="Report generation is already in progress")
+
+    report_status[session_id]["status"] = "queued"
+    report_status[session_id]["progress"] = 0
+    report_status[session_id]["message"] = "Retry queued..."
+    report_status[session_id]["comprehensive_pdf"] = None
+    report_status[session_id]["roadmap_pdf"] = None
+    report_status[session_id]["error"] = None
+
+    inputs = ComprehensiveInput(**payload)
+    background_tasks.add_task(generate_reports_background, session_id, inputs)
+
+    return {
+        "session_id": session_id,
+        "message": "Retry started",
+        "status_url": f"/status/{session_id}"
+    }
+
+
 @app.get("/status/{session_id}", summary="Check report generation status")
 async def get_status(session_id: str):
     """Get the current status of report generation"""
@@ -176,6 +217,7 @@ async def get_status(session_id: str):
         raise HTTPException(status_code=404, detail="Session not found")
     
     status_data = report_status[session_id].copy()
+    status_data.pop("input_payload", None)
     # Don't send the PDF data in status check, just indicate if ready
     status_data["comprehensive_ready"] = status_data.pop("comprehensive_pdf") is not None
     status_data["roadmap_ready"] = status_data.pop("roadmap_pdf") is not None
