@@ -1,9 +1,7 @@
 "use client"
 
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Building2, DollarSign, Factory } from "lucide-react"
+import { Building2, Users, IndianRupee, Factory, ShieldCheck, Info } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface CompanyDetailsStepProps {
   data: {
@@ -29,114 +27,143 @@ export function CompanyDetailsStep({ data, onChange }: CompanyDetailsStepProps) 
     }
   }
 
+  const textFields = [
+    {
+      id: "company_name",
+      label: "Company Name",
+      icon: Building2,
+      type: "text" as const,
+      placeholder: "e.g., Acme Manufacturing Pvt. Ltd.",
+      value: data.company_name,
+      onChange: (v: string) => handleChange("company_name", v),
+      required: true,
+    },
+    {
+      id: "industry",
+      label: "Industry / Sector",
+      icon: Factory,
+      type: "text" as const,
+      placeholder: "e.g., Automotive, Textiles, Plastics",
+      value: data.industry,
+      onChange: (v: string) => handleChange("industry", v),
+      required: true,
+    },
+  ]
+
+  const numericFields = [
+    {
+      id: "num_employees",
+      label: "Number of Employees",
+      icon: Users,
+      placeholder: "Total headcount",
+      value: data.num_employees,
+      onChange: (v: string) => handleChange("num_employees", parseInt(v) || 0),
+      suffix: "people",
+      required: true,
+    },
+    {
+      id: "annual_revenue",
+      label: "Annual Revenue",
+      icon: IndianRupee,
+      placeholder: "e.g., 3.5",
+      value: data.annual_revenue,
+      onChange: (v: string) => handleChange("annual_revenue", parseFloat(v) || 0),
+      suffix: "Cr (INR)",
+      step: "0.01",
+      required: true,
+    },
+  ]
+
   return (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-serif font-bold text-primary mb-2">Tell us about your company</h2>
-        <p className="text-muted-foreground">
-          This information helps us provide more accurate assessments and recommendations.
+      <div className="grid sm:grid-cols-2 gap-4">
+        {/* Text fields */}
+        {textFields.map((field) => {
+          const Icon = field.icon
+          const filled = !!field.value
+          return (
+            <div key={field.id} className="space-y-2">
+              <label htmlFor={field.id} className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground tracking-wide uppercase">
+                <Icon className="h-3.5 w-3.5" />
+                {field.label}
+                {field.required && <span className="text-destructive ml-0.5">*</span>}
+              </label>
+              <div className={cn(
+                "relative rounded-xl border transition-all duration-200",
+                filled
+                  ? "border-primary/30 bg-primary/5"
+                  : "border-border/60 bg-muted/20 hover:border-border"
+              )}>
+                <input
+                  id={field.id}
+                  type="text"
+                  value={field.value}
+                  onChange={(e) => field.onChange(e.target.value)}
+                  placeholder={field.placeholder}
+                  className="w-full bg-transparent px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-0"
+                />
+                {filled && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary/60" />
+                )}
+              </div>
+            </div>
+          )
+        })}
+
+        {/* Numeric fields */}
+        {numericFields.map((field) => {
+          const Icon = field.icon
+          const filled = field.value > 0
+          return (
+            <div key={field.id} className="space-y-2">
+              <label htmlFor={field.id} className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground tracking-wide uppercase">
+                <Icon className="h-3.5 w-3.5" />
+                {field.label}
+                {field.required && <span className="text-destructive ml-0.5">*</span>}
+              </label>
+              <div className={cn(
+                "relative rounded-xl border transition-all duration-200 flex items-center",
+                filled
+                  ? "border-primary/30 bg-primary/5"
+                  : "border-border/60 bg-muted/20 hover:border-border"
+              )}>
+                <input
+                  id={field.id}
+                  type="number"
+                  value={field.value || ""}
+                  onChange={(e) => field.onChange(e.target.value)}
+                  placeholder={field.placeholder}
+                  step={field.step ?? "1"}
+                  min={0}
+                  className="flex-1 bg-transparent px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-0 mono"
+                />
+                <span className="pr-3 text-xs text-muted-foreground/60 whitespace-nowrap flex-shrink-0">
+                  {field.suffix}
+                </span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Privacy note */}
+      <div className="flex items-start gap-3 p-4 rounded-xl border border-border/40 bg-muted/15">
+        <ShieldCheck className="h-4 w-4 text-secondary flex-shrink-0 mt-0.5" />
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Your data is used solely to generate your IoT readiness report. We do not store or share your
+          information with any third parties.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Building2 className="h-5 w-5 text-secondary" />
-              Company Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="company_name" className="text-sm font-medium">
-                Company Name *
-              </Label>
-              <Input
-                id="company_name"
-                value={data.company_name}
-                onChange={(e) => handleChange("company_name", e.target.value)}
-                placeholder="Enter your company name"
-                className="mt-1"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="industry" className="text-sm font-medium">
-                Industry *
-              </Label>
-              <Input
-                id="industry"
-                value={data.industry}
-                onChange={(e) => handleChange("industry", e.target.value)}
-                placeholder="e.g., Manufacturing, Automotive, Textiles"
-                className="mt-1"
-                required
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Factory className="h-5 w-5 text-secondary" />
-              Business Metrics
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="num_employees" className="text-sm font-medium">
-                Number of Employees *
-              </Label>
-              <Input
-                id="num_employees"
-                type="number"
-                value={data.num_employees ?? ""}
-                onChange={(e) => handleChange("num_employees", Number.parseInt(e.target.value) || 0)}
-                placeholder="Enter total number of employees (0-1000)"
-                className="mt-1"
-                min={0}
-                max={1000}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="annual_revenue" className="text-sm font-medium">
-                Annual Revenue (in Crores) *
-              </Label>
-              <Input
-                id="annual_revenue"
-                type="number"
-                step="0.01"
-                value={data.annual_revenue ?? ""}
-                onChange={(e) => handleChange("annual_revenue", Number.parseFloat(e.target.value) || 0)}
-                placeholder="Enter annual revenue in crores (0-1000)"
-                className="mt-1"
-                min={0}
-                max={1000}
-                required
-              />
-            </div>
-          </CardContent>
-        </Card>
+      {/* Tips */}
+      <div className="flex items-start gap-3 p-4 rounded-xl border border-primary/10 bg-primary/5">
+        <Info className="h-4 w-4 text-primary/60 flex-shrink-0 mt-0.5" />
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          <span className="text-primary/80 font-semibold">Tip:</span> Use the{" "}
+          <span className="text-foreground/70">Download Template</span> button above to get the Excel template,
+          fill it in offline, then upload it to auto-populate all sections.
+        </p>
       </div>
-
-      <Card className="bg-muted/50">
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-3">
-            <div className="bg-secondary/10 p-2 rounded-lg">
-              <DollarSign className="h-5 w-5 text-secondary" />
-            </div>
-            <div>
-              <h3 className="font-medium text-primary mb-1">Data Privacy & Security</h3>
-              <p className="text-sm text-muted-foreground">
-                Your company information is encrypted and used solely for generating your IoT readiness assessment. We
-                do not share your data with third parties and all reports are generated securely.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }

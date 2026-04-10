@@ -1,10 +1,8 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Building2, BarChart3, DollarSign, Target, Download, FileText, Zap } from "lucide-react"
+import { CheckCircle2, AlertCircle, Building2, BarChart3, DollarSign, Target, Sparkles, FileText, Map, Download } from "lucide-react"
+import { cn } from "@/lib/utils"
 import type { FormData } from "../isri-assessment-form"
 
 interface ReviewStepProps {
@@ -14,192 +12,153 @@ interface ReviewStepProps {
 }
 
 export function ReviewStep({ data, onSubmit, isSubmitting }: ReviewStepProps) {
-  const getCompletedBarriers = () => {
-    return Object.values(data.barriers).filter((barrier) => barrier && Object.keys(barrier).length > 0).length
-  }
+  const completedBarriers = Object.values(data.barriers).filter((b) => b && Object.keys(b).length > 0).length
+  const completedCosts = Object.keys(data.cost_factor_inputs).length
+  const completedKPIs = Object.values(data.kpi_factor_inputs).filter((v) => v !== undefined).length
 
-  const getCompletedCostFactors = () => {
-    return Object.keys(data.cost_factor_inputs).length
-  }
+  const checks = [
+    {
+      label: "Company details",
+      done: !!(data.company_details.company_name && data.company_details.industry),
+      detail: data.company_details.company_name
+        ? `${data.company_details.company_name} · ${data.company_details.industry}`
+        : "Incomplete",
+    },
+    {
+      label: "Barrier assessment",
+      done: completedBarriers === 15,
+      detail: `${completedBarriers}/15 barriers completed`,
+    },
+    {
+      label: "Cost factors",
+      done: completedCosts > 0,
+      detail: `${completedCosts}/20 cost categories entered`,
+    },
+    {
+      label: "KPI factors",
+      done: completedKPIs > 0,
+      detail: `${completedKPIs}/17 KPIs selected`,
+    },
+  ]
 
-  const getCompletedKPIFactors = () => {
-    return Object.values(data.kpi_factor_inputs).filter((value) => value !== undefined).length
-  }
-
-  const isFormComplete = () => {
-    return (
-      data.company_details.company_name &&
-      data.company_details.industry &&
-      data.company_details.num_employees >= 0 &&
-      data.company_details.annual_revenue >= 0 &&
-      getCompletedBarriers() === 15 &&
-      getCompletedCostFactors() > 0 &&
-      getCompletedKPIFactors() > 0
-    )
-  }
+  const allComplete = checks.every((c) => c.done)
+  const issueCount = checks.filter((c) => !c.done).length
 
   return (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-serif font-bold text-primary mb-2">Review & Generate Reports</h2>
-        <p className="text-muted-foreground">
-          Review your assessment data and generate comprehensive AI-powered IoT readiness reports.
-        </p>
+      {/* Checklist */}
+      <div className="bg-card border border-border/60 rounded-2xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-border/60 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-foreground">Assessment Checklist</h3>
+          {allComplete
+            ? <span className="text-xs text-secondary font-medium flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5" /> All complete</span>
+            : <span className="text-xs text-destructive font-medium flex items-center gap-1"><AlertCircle className="h-3.5 w-3.5" /> {issueCount} item{issueCount > 1 ? "s" : ""} incomplete</span>
+          }
+        </div>
+        <div className="divide-y divide-border/40">
+          {checks.map((check, i) => {
+            const icons = [Building2, BarChart3, DollarSign, Target]
+            const Icon = icons[i]
+            return (
+              <div key={i} className={cn(
+                "flex items-center gap-3 px-5 py-3.5",
+                check.done ? "" : "bg-destructive/5"
+              )}>
+                <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-foreground">{check.label}</div>
+                  <div className={cn(
+                    "text-xs mt-0.5 truncate",
+                    check.done ? "text-muted-foreground" : "text-destructive/80"
+                  )}>
+                    {check.detail}
+                  </div>
+                </div>
+                {check.done
+                  ? <CheckCircle2 className="h-4 w-4 text-secondary flex-shrink-0" />
+                  : <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0" />
+                }
+              </div>
+            )
+          })}
+        </div>
       </div>
 
-      {/* Company Overview */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-secondary" />
-            Company Overview
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Company Name</p>
-              <p className="font-medium">{data.company_details.company_name || "Not provided"}</p>
+      {/* Reports preview */}
+      <div className="grid sm:grid-cols-2 gap-3">
+        {[
+          {
+            icon: FileText,
+            title: "Comprehensive Analysis",
+            desc: "AI-generated analysis of all 15 barriers with severity levels, impact scores, and tailored recommendations.",
+            accent: "primary" as const,
+          },
+          {
+            icon: Map,
+            title: "Strategic Roadmap",
+            desc: "Phased 18-month implementation plan for the top 3 priority barriers with KPI targets.",
+            accent: "secondary" as const,
+          },
+        ].map((report, i) => {
+          const Icon = report.icon
+          return (
+            <div key={i} className={cn(
+              "border rounded-xl p-4 flex items-start gap-3",
+              report.accent === "primary" ? "bg-primary/5 border-primary/20" : "bg-secondary/5 border-secondary/20"
+            )}>
+              <div className={cn(
+                "flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center",
+                report.accent === "primary" ? "bg-primary/10" : "bg-secondary/10"
+              )}>
+                <Icon className={cn("h-4 w-4", report.accent === "primary" ? "text-primary" : "text-secondary")} />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-foreground">{report.title}</div>
+                <div className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{report.desc}</div>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Industry</p>
-              <p className="font-medium">{data.company_details.industry || "Not provided"}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Employees</p>
-              <p className="font-medium">{data.company_details.num_employees || 0}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Annual Revenue</p>
-              <p className="font-medium">₹{data.company_details.annual_revenue || 0} Crores</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Assessment Summary */}
-      <div className="grid md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <BarChart3 className="h-5 w-5 text-chart-1" />
-              Barriers
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold">{getCompletedBarriers()}/15</span>
-              <Badge variant={getCompletedBarriers() === 15 ? "default" : "secondary"}>
-                {getCompletedBarriers() === 15 ? "Complete" : "Incomplete"}
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">IoT adoption barriers assessed</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <DollarSign className="h-5 w-5 text-chart-2" />
-              Cost Factors
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold">{getCompletedCostFactors()}/20</span>
-              <Badge variant={getCompletedCostFactors() > 0 ? "default" : "secondary"}>
-                {getCompletedCostFactors() > 0 ? "Complete" : "Incomplete"}
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">Cost categories analyzed</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Target className="h-5 w-5 text-chart-3" />
-              KPI Factors
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold">{getCompletedKPIFactors()}/17</span>
-              <Badge variant={getCompletedKPIFactors() > 0 ? "default" : "secondary"}>
-                {getCompletedKPIFactors() > 0 ? "Complete" : "Incomplete"}
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">Performance indicators selected</p>
-          </CardContent>
-        </Card>
+          )
+        })}
       </div>
 
-      <Separator />
-
-      {/* Report Generation */}
-      <Card className="bg-gradient-to-r from-secondary/5 to-accent/5 border-secondary/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <Zap className="h-6 w-6 text-secondary" />
-            AI-Powered Report Generation
-          </CardTitle>
-          <CardDescription>Generate comprehensive reports with strategic insights and recommendations</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-background/50">
-              <FileText className="h-5 w-5 text-chart-1 mt-0.5" />
-              <div>
-                <h4 className="font-medium text-primary">Barrier Analysis Report</h4>
-                <p className="text-sm text-muted-foreground">
-                  Detailed analysis of all 15 barriers with severity levels and impact assessment
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-background/50">
-              <Target className="h-5 w-5 text-chart-2 mt-0.5" />
-              <div>
-                <h4 className="font-medium text-primary">Strategic Roadmap</h4>
-                <p className="text-sm text-muted-foreground">
-                  Action plan for addressing top 3 barriers with implementation guidance
-                </p>
-              </div>
-            </div>
+      {/* Error message if incomplete */}
+      {!allComplete && (
+        <div className="flex items-start gap-2.5 p-4 rounded-xl bg-destructive/5 border border-destructive/20">
+          <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-destructive mb-1">Please complete all sections before generating</p>
+            <ul className="text-xs text-destructive/80 space-y-0.5">
+              {!checks[0].done && <li>Company name and industry are required</li>}
+              {!checks[1].done && <li>Complete all 15 barrier assessments</li>}
+              {!checks[2].done && <li>Enter at least one cost factor</li>}
+              {!checks[3].done && <li>Select at least one KPI factor</li>}
+            </ul>
           </div>
+        </div>
+      )}
 
-          {!isFormComplete() && (
-            <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
-              <p className="text-sm text-destructive font-medium">
-                Please complete all required sections before generating reports:
-              </p>
-              <ul className="text-sm text-destructive mt-2 space-y-1">
-                {!data.company_details.company_name && <li>• Company details are incomplete</li>}
-                {getCompletedBarriers() < 15 && <li>• Complete all 15 barrier assessments</li>}
-                {getCompletedCostFactors() === 0 && <li>• Add cost factor data</li>}
-                {getCompletedKPIFactors() === 0 && <li>• Select relevant KPI factors</li>}
-              </ul>
-            </div>
-          )}
+      {/* Generate button */}
+      <Button
+        onClick={onSubmit}
+        disabled={!allComplete || isSubmitting}
+        className="w-full py-6 text-base gap-2.5 bg-secondary hover:bg-secondary/90"
+      >
+        {isSubmitting ? (
+          <>
+            <Sparkles className="h-5 w-5 animate-pulse" />
+            Generating your reports...
+          </>
+        ) : (
+          <>
+            <Download className="h-5 w-5" />
+            Generate ISRI Assessment Reports
+          </>
+        )}
+      </Button>
 
-          <Button
-            onClick={onSubmit}
-            disabled={!isFormComplete() || isSubmitting}
-            className="w-full bg-secondary hover:bg-secondary/90 text-lg py-6"
-          >
-            {isSubmitting ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                Generating AI Reports...
-              </>
-            ) : (
-              <>
-                <Download className="h-5 w-5 mr-2" />
-                Generate ISRI Assessment Reports
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
+      <p className="text-center text-xs text-muted-foreground">
+        Report generation takes 2–4 minutes. Keep this tab open.
+      </p>
     </div>
   )
 }

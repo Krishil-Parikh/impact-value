@@ -11,7 +11,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 dotenv_path = BASE_DIR / ".env"
 load_dotenv(dotenv_path=str(dotenv_path))
 
-# OpenRouter AI Configuration - prefer value from environment/.env
+# AI Provider selection — "gemini" or "openrouter"
+AI_PROVIDER: str = os.getenv("AI_PROVIDER", "openrouter")
+
+# Google Gemini API Configuration
+GEMINI_API_KEY: Optional[str] = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemma-3-27b-it")
+GEMINI_API_URL: str = "https://generativelanguage.googleapis.com/v1beta/models"
+
+# OpenRouter AI Configuration (fallback)
 OPENROUTER_API_KEY: Optional[str] = os.getenv("OPENROUTER_API_KEY")
 # OPENROUTER_MODEL: str = "mistralai/mistral-large-2512"
 OPENROUTER_MODEL: str = "mistralai/mixtral-8x7b-instruct"

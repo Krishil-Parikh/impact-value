@@ -2,63 +2,54 @@
 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { DollarSign, TrendingUp, Calculator } from "lucide-react"
+import { Info } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface CostFactorsStepProps {
   data: any
   onChange: (data: any) => void
 }
 
-const costFactors = [
-  { key: "aftermarket_services_warranty", label: "Aftermarket Services / Warranty", category: "revenue" },
-  { key: "depreciation", label: "Depreciation", category: "revenue" },
-  { key: "labour", label: "Labour", category: "operational" },
-  { key: "maintenance_repair", label: "Maintenance & Repair", category: "operational" },
-  { key: "raw_materials_consumables", label: "Raw Materials & Consumables", category: "operational" },
-  { key: "rental_operating_lease", label: "Rental & Operating Lease", category: "operational" },
-  { key: "research_development", label: "Research & Development (R&D)", category: "strategic" },
+const costFactorGroups = [
   {
-    key: "selling_general_administrative_expense",
-    label: "Selling, General & Administrative Expense",
-    category: "operational",
-  },
-  { key: "utilities", label: "Utilities", category: "operational" },
-  {
-    key: "earnings_before_interest_taxes_ebit",
-    label: "Earnings Before Interest & Taxes (EBIT)",
-    category: "financial",
-  },
-  { key: "financing_costs_interest", label: "Financing Costs (Interest)", category: "financial" },
-  { key: "taxation_compliance_costs", label: "Taxation and Compliance Costs", category: "financial" },
-  { key: "supply_chain_logistics_costs", label: "Supply Chain and Logistics Costs", category: "operational" },
-  {
-    key: "technology_digital_infrastructure_costs",
-    label: "Technology and Digital Infrastructure Costs",
-    category: "strategic",
-  },
-  { key: "training_skill_development_costs", label: "Training and Skill Development Costs", category: "strategic" },
-  { key: "regulatory_compliance_costs", label: "Regulatory and Compliance Costs", category: "financial" },
-  { key: "insurance_costs", label: "Insurance Costs", category: "financial" },
-  {
-    key: "marketing_customer_acquisition_costs",
-    label: "Marketing and Customer Acquisition Costs",
-    category: "strategic",
+    title: "Operational Costs",
+    color: "text-blue-600",
+    factors: [
+      { key: "labour", label: "Labour" },
+      { key: "raw_materials_consumables", label: "Raw Materials & Consumables" },
+      { key: "maintenance_repair", label: "Maintenance & Repair" },
+      { key: "utilities", label: "Utilities" },
+      { key: "supply_chain_logistics_costs", label: "Supply Chain & Logistics" },
+      { key: "quality_control_assurance", label: "Quality Control & Assurance" },
+      { key: "rental_operating_lease", label: "Rental & Operating Lease" },
+      { key: "selling_general_administrative_expense", label: "Selling, General & Administrative" },
+    ],
   },
   {
-    key: "environmental_social_responsibility_costs",
-    label: "Environmental and Social Responsibility Costs",
-    category: "strategic",
+    title: "Financial & Compliance",
+    color: "text-emerald-600",
+    factors: [
+      { key: "earnings_before_interest_taxes_ebit", label: "EBIT" },
+      { key: "financing_costs_interest", label: "Financing Costs (Interest)" },
+      { key: "taxation_compliance_costs", label: "Taxation & Compliance" },
+      { key: "regulatory_compliance_costs", label: "Regulatory Compliance" },
+      { key: "insurance_costs", label: "Insurance" },
+      { key: "depreciation", label: "Depreciation" },
+      { key: "aftermarket_services_warranty", label: "Aftermarket Services / Warranty" },
+    ],
   },
-  { key: "quality_control_assurance", label: "Quality Control and Assurance", category: "operational" },
+  {
+    title: "Strategic Investments",
+    color: "text-violet-600",
+    factors: [
+      { key: "research_development", label: "Research & Development (R&D)" },
+      { key: "technology_digital_infrastructure_costs", label: "Technology & Digital Infrastructure" },
+      { key: "training_skill_development_costs", label: "Training & Skill Development" },
+      { key: "marketing_customer_acquisition_costs", label: "Marketing & Customer Acquisition" },
+      { key: "environmental_social_responsibility_costs", label: "Environmental & Social Responsibility" },
+    ],
+  },
 ]
-
-const categories = {
-  operational: { title: "Operational Costs", icon: Calculator, color: "text-chart-1" },
-  strategic: { title: "Strategic Investments", icon: TrendingUp, color: "text-chart-2" },
-  financial: { title: "Financial Costs", icon: DollarSign, color: "text-chart-3" },
-  revenue: { title: "Revenue-Related", icon: DollarSign, color: "text-chart-4" },
-}
 
 export function CostFactorsStep({ data, onChange }: CostFactorsStepProps) {
   const clamp = (n: number) => {
@@ -70,85 +61,49 @@ export function CostFactorsStep({ data, onChange }: CostFactorsStepProps) {
     onChange({ ...data, [field]: clamp(value) })
   }
 
-  const getCategoryFactors = (category: string) => {
-    return costFactors.filter((factor) => factor.category === category)
-  }
-
   return (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-serif font-bold text-primary mb-2">Cost Factor Analysis</h2>
-        <p className="text-muted-foreground">
-          Enter each cost category as a percentage of your annual revenue. This helps assess the financial impact of IoT
-          barriers.
+      {/* Instruction banner */}
+      <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-primary/5 border border-primary/15">
+        <Info className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+        <p className="text-xs text-primary/80 leading-relaxed">
+          Enter each category as a <strong>decimal fraction of annual revenue</strong> (not a percentage).
+          For example, if labour costs are 13% of revenue, enter <strong>0.13</strong>.
         </p>
       </div>
 
-      <div className="grid gap-6">
-        {Object.entries(categories).map(([categoryKey, category]) => {
-          const categoryFactors = getCategoryFactors(categoryKey)
-          const Icon = category.icon
-
-          return (
-            <Card key={categoryKey}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Icon className={`h-5 w-5 ${category.color}`} />
-                  {category.title}
-                </CardTitle>
-                <CardDescription>Enter values as percentage of annual revenue</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 sm:gap-6">
-                  {categoryFactors.map((factor) => (
-                    <div key={factor.key} className="space-y-2">
-                      <Label htmlFor={factor.key} className="text-sm font-medium">
-                        {factor.label}
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          id={factor.key}
-                          type="number"
-                          step="0.01"
-                          min={0}
-                          max={1000}
-                          value={data[factor.key] ?? ""}
-                          onChange={(e) => handleChange(factor.key, Number.parseFloat(e.target.value) || 0)}
-                          placeholder="0 - 1000"
-                          className="pr-8"
-                        />
-                        <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">
-                          %
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+      {costFactorGroups.map((group) => (
+        <div key={group.title}>
+          <h3 className={cn("text-xs font-semibold uppercase tracking-wider mb-3", group.color)}>
+            {group.title}
+          </h3>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {group.factors.map((factor) => (
+              <div key={factor.key} className="space-y-1">
+                <Label htmlFor={factor.key} className="text-sm text-foreground/90">
+                  {factor.label}
+                </Label>
+                <div className="relative">
+                  <Input
+                    id={factor.key}
+                    type="number"
+                    step="0.001"
+                    min={0}
+                    max={1000}
+                    value={data[factor.key] ?? ""}
+                    onChange={(e) => handleChange(factor.key, parseFloat(e.target.value) || 0)}
+                    placeholder="e.g., 0.13"
+                    className="pr-16"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                    fraction
+                  </span>
                 </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-
-      <Card className="bg-muted/50">
-        <CardContent className="pt-4 sm:pt-6 p-4 sm:p-6">
-          <div className="flex items-start gap-2 sm:gap-3">
-            <div className="bg-secondary/10 p-1.5 sm:p-2 rounded-lg flex-shrink-0">
-              <Calculator className="h-4 w-4 sm:h-5 sm:w-5 text-secondary" />
-            </div>
-            <div>
-              <h3 className="font-medium text-primary mb-1 text-sm sm:text-base">Cost Factor Guidelines</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mb-2">
-                These percentages represent how much each cost category contributes to your total annual revenue. For
-                example, if your labour costs are ₹10 crores and your annual revenue is ₹100 crores, enter 10%.
-              </p>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Accurate cost data helps identify which barriers have the highest financial impact on your organization.
-              </p>
-            </div>
+              </div>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      ))}
     </div>
   )
 }
