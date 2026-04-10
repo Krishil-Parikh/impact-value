@@ -1,20 +1,27 @@
 import type React from "react"
-import { Playfair_Display, Source_Sans_3 as Source_Sans_Pro } from "next/font/google"
+import { Syne, DM_Sans, JetBrains_Mono } from "next/font/google"
 import Script from "next/script"
 import "./globals.css"
 import { structuredData, faqSchema, serviceSchema } from "@/lib/seo-schema"
 
-const playfairDisplay = Playfair_Display({
+const syne = Syne({
   subsets: ["latin"],
-  variable: "--font-playfair-display",
+  variable: "--font-syne",
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
+})
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
   display: "swap",
 })
 
-const sourceSansPro = Source_Sans_Pro({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  weight: ["300", "400", "600", "700"],
-  variable: "--font-source-sans-pro",
+  variable: "--font-jetbrains-mono",
   display: "swap",
+  weight: ["400", "500", "600"],
 })
 
 export const metadata = {
@@ -80,57 +87,41 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${playfairDisplay.variable} ${sourceSansPro.variable} antialiased`}>
+    <html lang="en" className={`${syne.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased`}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="canonical" href="https://impact-value.vercel.app" />
-        
+
         {/* Structured Data - JSON-LD */}
         <Script
           id="organization-schema"
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(structuredData),
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
         <Script
           id="faq-schema"
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(faqSchema),
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />
         <Script
           id="service-schema"
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(serviceSchema),
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
         />
 
         {/* Google Analytics */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=YOUR_GA_ID"
-          strategy="afterInteractive"
-        />
+        <Script src="https://www.googletagmanager.com/gtag/js?id=YOUR_GA_ID" strategy="afterInteractive" />
         <Script
           id="google-analytics"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'YOUR_GA_ID');
-            `,
+            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','YOUR_GA_ID');`,
           }}
         />
       </head>
-      <body className="min-h-screen bg-background text-foreground">
-        <div className="mx-4 sm:mx-6 md:mx-10 lg:mx-16 xl:mx-24">{children}</div>
-      </body>
+      <body className="min-h-screen bg-background text-foreground">{children}</body>
     </html>
   )
 }
