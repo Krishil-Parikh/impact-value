@@ -43,13 +43,13 @@ class Barrier5Input(BaseModel):
 
 
 class Barrier6Input(BaseModel):
-    num_non_compliance_incidents: int = Field(..., description="Number of non-compliance incidents")
+    num_non_compliance_incidents: float = Field(..., description="Number of non-compliance incidents")
     pct_projects_delayed_regulatory: float = Field(..., description="% of projects delayed due to regulations")
     time_to_achieve_compliance_days: int = Field(..., description="Time to achieve compliance (days)")
 
 
 class Barrier7Input(BaseModel):
-    num_industry_standards_adopted: int = Field(..., description="Number of industry standards adopted")
+    num_industry_standards_adopted: float = Field(..., description="Number of industry standards adopted")
     pct_iot_devices_conforming: float = Field(..., description="% of IoT devices conforming to architecture")
     pct_projects_delayed_standardized_solutions: float = Field(..., description="% of projects delayed due to lack of standards")
 
@@ -57,7 +57,7 @@ class Barrier7Input(BaseModel):
 class Barrier8Input(BaseModel):
     pct_internet_coverage: float = Field(..., description="% internet coverage")
     avg_internet_speed_mbps: float = Field(..., description="Average internet speed (Mbps)")
-    freq_it_infrastructure_outages_per_month: int = Field(..., description="IT outages per month")
+    freq_it_infrastructure_outages_per_month: float = Field(..., description="IT outages per month")
 
 
 class Barrier9Input(BaseModel):
@@ -92,7 +92,7 @@ class Barrier13Input(BaseModel):
 
 class Barrier14Input(BaseModel):
     pct_standards_compliant_iot_devices: float = Field(..., description="% of standards-compliant IoT devices")
-    num_industry_specific_guidelines_implemented: int = Field(..., description="Number of guidelines implemented")
+    num_industry_specific_guidelines_implemented: float = Field(..., description="Number of guidelines implemented")
 
 
 class Barrier15Input(BaseModel):

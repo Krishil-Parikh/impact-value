@@ -102,9 +102,7 @@ async def generate_reports_background(session_id: str, inputs: ComprehensiveInpu
         report_status[session_id]["message"] = "Converting comprehensive analysis to PDF..."
         analysis_pdf = create_pdf_from_markdown(
             markdown_content=comprehensive_analysis,
-            report_title="Comprehensive Barrier Analysis Report",
-            company_details=company_details,
-            report_date=datetime.now().strftime("%B %d, %Y"),
+            report_title="Comprehensive Barrier Analysis Report"
         )
         report_status[session_id]["comprehensive_pdf"] = analysis_pdf
         report_status[session_id]["message"] = "✅ Comprehensive analysis ready"
@@ -120,9 +118,7 @@ async def generate_reports_background(session_id: str, inputs: ComprehensiveInpu
         strategic_roadmap = await generate_strategic_roadmap(
             company_details=company_details,
             top_barriers=top_3_barriers,
-            barrier_scores=barrier_scores,
-            cost_factor_inputs=inputs.cost_factor_inputs.dict(),
-            kpi_factor_inputs=inputs.kpi_factor_inputs.dict(),
+            barrier_scores=barrier_scores
         )
         
         # STEP 9: Convert roadmap to PDF
@@ -130,9 +126,7 @@ async def generate_reports_background(session_id: str, inputs: ComprehensiveInpu
         report_status[session_id]["message"] = "Converting strategic roadmap to PDF..."
         roadmap_pdf = create_pdf_from_markdown(
             markdown_content=strategic_roadmap,
-            report_title="Strategic Roadmap Report",
-            company_details=company_details,
-            report_date=datetime.now().strftime("%B %d, %Y"),
+            report_title="Strategic Roadmap Report"
         )
         report_status[session_id]["roadmap_pdf"] = roadmap_pdf
         
@@ -408,16 +402,12 @@ async def generate_full_report(inputs: ComprehensiveInput):
         try:
             analysis_pdf = create_pdf_from_markdown(
                 markdown_content=comprehensive_analysis,
-                report_title="Comprehensive Barrier Analysis Report",
-                company_details=company_details,
-                report_date=datetime.now().strftime("%B %d, %Y"),
+                report_title="Comprehensive Barrier Analysis Report"
             )
-
+            
             roadmap_pdf = create_pdf_from_markdown(
                 markdown_content=strategic_roadmap,
-                report_title="Strategic Roadmap Report",
-                company_details=company_details,
-                report_date=datetime.now().strftime("%B %d, %Y"),
+                report_title="Strategic Roadmap Report"
             )
         except Exception as pdf_error:
             raise HTTPException(
